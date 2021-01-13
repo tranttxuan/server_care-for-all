@@ -10,7 +10,8 @@ const AnnouncementSchema = new Schema({
         additionalServices: {
                 houseKeeping: Boolean,
                 shoppingAndErrands: Boolean,
-                specialNeedsCare: Boolean
+                specialNeedsCare: Boolean,
+                homeworkAssistance: Boolean
         },
         description: String,
         formattedAddress: String,

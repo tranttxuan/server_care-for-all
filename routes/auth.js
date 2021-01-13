@@ -7,6 +7,7 @@ const upload = require("../config/cloundinary-setup");
 
 const salt = 10;
 
+//LOGIN
 router.post("/login", (req, res, next) => {
   const { email, password } = req.body;
   User.findOne({ email })
@@ -26,6 +27,7 @@ router.post("/login", (req, res, next) => {
     .catch(next);
 });
 
+//SIGNUP
 router.post("/signup", (req, res, next) => {
   const { email, password, firstName, lastName } = req.body;
 
@@ -60,6 +62,7 @@ router.post("/signup", (req, res, next) => {
     .catch(next);
 });
 
+//UPDATE PROFILE
 router.patch("/update", requireAuth, upload.single("image"), (req, res, next) => {
   if (req.file) {
     req.body.image = req.file.path;
@@ -85,6 +88,7 @@ router.get("/isLoggedIn", (req, res, next) => {
     .catch(next);
 });
 
+//LOGOUT
 router.delete("/logout", (req, res, next) => {
   if (req.session.currentUser) {
     req.session.destroy((err) => {
