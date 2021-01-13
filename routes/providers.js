@@ -1,9 +1,16 @@
 const express = require('express');
-const User = require('../models/User');
 const router = express.Router();
+const User = require('../models/User');
 
-/* GET users who are providers */
-router.get('/childCare', (req, res, next) => {
+// GET ALL PROVIDERS 
+router.get('/', (req, res, next) => {
+        User.find({ isProvider: true })
+                .then(list => { res.status(200).json(list) })
+                .catch(err => res.status(500).json(err))
+})
+
+// GET providers by service 
+router.get('/:service', (req, res, next) => {
         const service = req.params.service;
         // *********how to use***************
         // User.find({ `service.${req.params.service}`: true })
@@ -42,6 +49,7 @@ router.get("/one/:idUser", (req, res, next) => {
                         else res.status(200).json(user)
                 })
                 .catch(err => res.status(500).json(err))
-})
+});
+
 
 module.exports = router;

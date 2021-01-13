@@ -1,9 +1,17 @@
 const express = require('express');
-const Announcement = require('../models/Announcement');
 const router = express.Router();
 const requireAuth = require("../middlewares/requireAuth");
+const Announcement = require('../models/Announcement');
 
-//GET announcements
+
+//GET All announcements
+router.get("/:service", (req, res, next) => {
+        Announcement.find()
+        .then(list => { res.status(200).json(list) })
+        .catch(err => res.status(500).json(err))
+});
+
+//GET announcements by service
 router.get("/:service", (req, res, next) => {
         const service = req.params.service;
 

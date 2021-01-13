@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Review = require('../models/Review');
-const requireAuth = require("../middlewares/requireAuth");
 const User = require('../models/User');
+const requireAuth = require("../middlewares/requireAuth");
 
 //Get all reviews for a user
 router.get("/:idReceiver", (req, res, next) => {

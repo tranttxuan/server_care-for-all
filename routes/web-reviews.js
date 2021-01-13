@@ -1,6 +1,7 @@
 const express = require('express');
-const WebReview = require('../models/WebReview');
 const router = express.Router();
+const requireAuth = require('../middlewares/requireAuth');
+const WebReview = require('../models/WebReview');
 
 //GET all reviews
 router.get("/", (req, res, next) => {
