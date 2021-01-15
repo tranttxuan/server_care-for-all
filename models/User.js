@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-  email: { type: String, required: true},
+  email: { type: String, required: true, unique:true},
   password: { type: String, required: true },
   firstName: String,
   lastName: String,
@@ -18,21 +18,20 @@ const userSchema = new Schema({
   experiences: String,
   availability: String,
   service: {
-    childCare: Boolean,
-    seniorCare: Boolean,
-    petCare: Boolean
+    childCare: { type: Boolean, default: false },
+    seniorCare:{ type: Boolean, default: false },
+    petCare:{ type: Boolean, default: false },
   },
   additionalServices: {
-    houseKeeping: Boolean,
-    shoppingAndErrands: Boolean,
-    specialNeedsCare: Boolean,
-    homeworkAssistance: Boolean
+    houseKeeping: { type: Boolean, default: false },
+    shoppingAndErrands:{ type: Boolean, default: false },
+    specialNeedsCare:{ type: Boolean, default: false },
+    homeworkAssistance:{ type: Boolean, default: false },
   },
   isProvider: { type: Boolean, default: false },
   favoriteUsers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   reviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }],
   role: { type: String, enum: ["admin", "user"], default: 'user' },
-
 }, {
   timestamps: true
 });

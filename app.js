@@ -15,7 +15,7 @@ const cors = require("cors");
  * Middlewares
  */
 // ADD CORS:
-app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true}));
+app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
 
 app.use(logger("dev"));
 app.use(express.json());
@@ -26,7 +26,10 @@ app.use(express.static(path.join(__dirname, "public")));
 // SESSION
 app.use(
   session({
-    store: new MongoStore({ mongooseConnection: mongoose.connection }), // Persist session in database.
+    store: new MongoStore({
+      mongooseConnection: mongoose.connection,
+      ttl: 24 * 60 * 60,
+    }), 
     secret: process.env.SESSION_SECRET,
     resave: true,
     saveUninitialized: true,

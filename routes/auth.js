@@ -13,12 +13,12 @@ router.post("/login", (req, res, next) => {
   User.findOne({ email })
     .then((user) => {
       if (!user) {
-        return res.status(400).json({ message: "Invalid credentials" });
+        return res.status(400).json({ message: "Invalid email. Try again" });
       }
 
       const isValidPassword = bcrypt.compareSync(password, user.password);
       if (!isValidPassword) {
-        return res.status(400).json({ message: "Invalid credentials" });
+        return res.status(400).json({ message: "Invalid password. Try again" });
       }
 
       req.session.currentUser = user._id;
@@ -30,6 +30,7 @@ router.post("/login", (req, res, next) => {
 //SIGNUP
 router.post("/signup", (req, res, next) => {
   const { email, password, firstName, lastName } = req.body;
+  console.log(req.body)
 
   if (!email || !password) {
     res.status(400).json({ message: 'Provide username and password' });
@@ -62,13 +63,48 @@ router.post("/signup", (req, res, next) => {
     .catch(next);
 });
 
+
+// //GET PROFILE
+// router.get("/update", requireAuth, (req, res, next) => {
+//   User.find({ _id: req.session.currentUser})
+//     .populate("Users")
+//     .populate("Review")
+//     .then(list => {
+//       console.log(list)
+//       res.status(200).json(list)
+//     })
+//     .catch(err => res.status(500).json(err))
+// })
+
+
 //UPDATE PROFILE
 router.patch("/update", requireAuth, upload.single("image"), (req, res, next) => {
   if (req.file) {
     req.body.image = req.file.path;
   }
+  //check if new email is unique
+  User.findById(req.session.currentUser).select("email")
+    .then(user => {
+      if (req.body.user.email !== user.email) {
+        return res.status(200).json({ message: "Email already taken" })
+      }
+    })
+    .catch(next);
 
-  User.findByIdAndUpdate(req.session.currentUser, req.body, { new: true })
+  // encrypt password
+  if (req.body.user.password) {
+    //check password
+    const regex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+    if (!regex.test((req.body.user.password))) {
+      res.status(200).json({ message: 'Please make your password at least 6 characters, that contains at least one uppercase, one lowercase and one number digit in it, for security purposes.' });
+      return;
+    }
+
+    const hashedPassword = bcrypt.hashSync(req.body.user.password, salt);
+    req.body.user.password = hashedPassword
+  }
+
+  User.findByIdAndUpdate(req.session.currentUser, req.body.user, { new: true })
     .select("-password")
     .then(updatedUser => {
       res.status(200).json(updatedUser)
@@ -76,9 +112,10 @@ router.patch("/update", requireAuth, upload.single("image"), (req, res, next) =>
     .catch(err => res.status(500).json(err))
 })
 
+//CHECK is Logged in
 router.get("/isLoggedIn", (req, res, next) => {
   if (!req.session.currentUser)
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(200).json({ message: "Unauthorized" });
 
   User.findById(req.session.currentUser)
     .select("-password")
@@ -96,7 +133,7 @@ router.delete("/logout", (req, res, next) => {
       res.status(200).json({ message: "Successfully disconnected." });
     });
   } else {
-    res.status(400).json({ message: "no session" });
+    res.status(200).json({ message: "no session" });
   }
 });
 

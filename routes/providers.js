@@ -6,7 +6,7 @@ const User = require('../models/User');
 router.get('/', (req, res, next) => {
         User.find({ isProvider: true })
                 .then(list => { res.status(200).json(list) })
-                .catch(err => res.status(500).json(err))
+                .catch(err => res.status(500).json(err))    
 })
 
 // GET providers by service 
