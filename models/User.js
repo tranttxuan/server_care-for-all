@@ -29,7 +29,8 @@ const userSchema = new Schema({
     homeworkAssistance:{ type: Boolean, default: false },
   },
   isProvider: { type: Boolean, default: false },
-  favoriteUsers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  bookingList:[{ type: Schema.Types.ObjectId, ref: 'User' }],
+  favoriteProviders: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   reviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }],
   role: { type: String, enum: ["admin", "user"], default: 'user' },
 }, {

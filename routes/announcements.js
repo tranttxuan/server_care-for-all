@@ -7,8 +7,8 @@ const Announcement = require('../models/Announcement');
 //GET All announcements
 router.get("/", (req, res, next) => {
         Announcement.find()
-        .then(list => { res.status(200).json(list) })
-        .catch(err => res.status(500).json(err))
+                .then(list => { res.status(200).json(list) })
+                .catch(err => res.status(500).json(err))
 });
 
 //GET announcements by service
@@ -31,6 +31,23 @@ router.get("/:service", (req, res, next) => {
                         .catch(err => res.status(500).json(err))
                 return;
         }
+});
+
+//GET by author
+router.get("/author/:id", requireAuth, (req, res, next) => {
+        if (req.params.id === req.session.currentUser) {
+                Announcement.find({ author: req.params.id }, { createdAt: 1, title: 1, applicants: 1 })
+                        .populate({ path: 'applicants', select: 'firstName lastName' })
+                        .then(list => {
+                                console.log(list)
+                                res.status(200).json(list)
+                        })
+                        .catch(err => res.status(500).json(err))
+        } else {
+                res.status(200).json({ message: "You are not allowed to get these documents" });
+                return;
+        }
+
 })
 
 //GET a specific announcement

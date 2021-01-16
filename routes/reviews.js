@@ -8,11 +8,11 @@ const requireAuth = require("../middlewares/requireAuth");
 router.get("/:idReceiver", (req, res, next) => {
       User.findOne({ _id: req.params.idReceiver }, { reviews: 1, _id: 0 })
             .populate({
-                  path:'reviews',
-                  populate:{
-                        path:'sender',
-                        model:'User',
-                        select:'firstName'
+                  path: 'reviews',
+                  populate: {
+                        path: 'sender',
+                        model: 'User',
+                        select: 'firstName'
                   }
             })
             .then(list => { res.status(200).json(list) })
@@ -23,13 +23,19 @@ router.get("/:idReceiver", (req, res, next) => {
 //Post a review of a provider
 router.post("/create/:idReceiver", requireAuth, (req, res, next) => {
       req.body.sender = req.session.currentUser;
-
+      
       if (req.params.idReceiver !== req.session.currentUser) {
             Review.create(req.body)
                   .then(review => {
-                        console.log(review._id)
+                       
                         User.findByIdAndUpdate(req.params.idReceiver, { $push: { reviews: review._id } })
-                              .then(response => res.status(200).json({ message: "Successfully added a review" }))
+                              .then(response => {
+                                    if (!response) {
+                                          return res.status(200).json({ message: "Not found this provider in database " });
+                                    } else {
+                                          return res.status(200).json({ message: "Successfully added a review" })
+                                    }
+                              })
                               .catch(err => res.status(500).json(err))
                   })
                   .catch(err => res.status(500).json(err))
