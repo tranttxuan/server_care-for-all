@@ -44,7 +44,16 @@ router.get('/:service', (req, res, next) => {
 
 //GET a single user
 router.get("/one/:idUser", (req, res, next) => {
-        User.find({ $and: [{ _id: req.params.idUser }, { isProvider: true }] })
+        User
+                .find({ $and: [{ _id: req.params.idUser }, { isProvider: true }] })
+                .populate({
+                        path: 'reviews',
+                        populate: {
+                                path: 'sender',
+                                model: 'User',
+                                select: 'firstName'
+                        }
+                })
                 .then(user => {
                         if (user.length === 0) res.status(200).json("User does not share his profile")
                         else res.status(200).json(user)
@@ -57,7 +66,7 @@ router.post("/favorite/:idProvider", requireAuth, (req, res, next) => {
         if (req.params.idProvider === req.session.currentUser) {
                 return res.status(200).json({ message: "Of course you are in your favorite list!" })
         };
-      
+
         User.findByIdAndUpdate(req.session.currentUser, { $addToSet: { favoriteProviders: req.params.idProvider } }, { new: true })
                 .then(response => {
                         console.log("here", response.favoriteProviders)
@@ -68,8 +77,11 @@ router.post("/favorite/:idProvider", requireAuth, (req, res, next) => {
 
 //DELETE a provider in the user's favorite list
 router.post("/no-favorite/:idProvider", requireAuth, (req, res, next) => {
-        User.findByIdAndUpdate(req.session.currentUser, { $pull: { favoriteProviders: req.params.isProvider } })
-                .then(response => res.status(200).json({ message: "Successfully deleted this provider to your favorite list" }))
+        User.findByIdAndUpdate(req.session.currentUser, { $pull: { favoriteProviders: req.params.idProvider } }, { new: true })
+                .then(response => {
+                        console.log(response)
+                        res.status(200).json({ message: "Successfully deleted this provider to your favorite list" })
+                })
                 .catch(err => res.status(500).json(err));
 })
 
