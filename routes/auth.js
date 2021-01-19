@@ -114,8 +114,9 @@ router.patch("/update", requireAuth, upload.single("image"), (req, res, next) =>
 
 //CHECK is Logged in
 router.get("/isLoggedIn", (req, res, next) => {
+  console.log(req.session.currentUser, "iam here")
   if (!req.session.currentUser)
-    return res.status(200).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized" });
 
   User.findById(req.session.currentUser)
     .select("-password")
