@@ -6,6 +6,8 @@ const WebReview = require('../models/WebReview');
 //GET all reviews
 router.get("/", (req, res, next) => {
       WebReview.find()
+            .populate("sender", "firstName")
+            .limit(-5)
             .then(list => res.status(200).json(list))
             .catch(err => res.status(500).json(err))
 });

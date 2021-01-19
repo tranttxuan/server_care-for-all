@@ -23,7 +23,7 @@ router.get("/:idReceiver", (req, res, next) => {
 //Post a review of a provider
 router.post("/create/:idReceiver", requireAuth, (req, res, next) => {
       req.body.sender = req.session.currentUser;
-      
+      console.log("check", req.body)
       if (req.params.idReceiver !== req.session.currentUser) {
             Review.create(req.body)
                   .then(review => {

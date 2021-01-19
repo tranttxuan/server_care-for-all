@@ -42,8 +42,9 @@ router.get('/:service', (req, res, next) => {
 });
 
 
-//GET a single user
+//GET a single provider
 router.get("/one/:idUser", (req, res, next) => {
+        // console.log(req.query)
         User
                 .find({ $and: [{ _id: req.params.idUser }, { isProvider: true }] })
                 .populate({
@@ -54,14 +55,19 @@ router.get("/one/:idUser", (req, res, next) => {
                                 select: 'firstName'
                         }
                 })
+                .slice("reviews", -(req.query.limit))
                 .then(user => {
                         if (user.length === 0) res.status(200).json("User does not share his profile")
-                        else res.status(200).json(user)
+                        else {
+                                // console.log(user)
+                                res.status(200).json(user)
+                        }
                 })
                 .catch(err => res.status(500).json(err))
 });
 
-//POST add a provider to favorite list of the user
+
+//POST add a provider into favorite list of the user
 router.post("/favorite/:idProvider", requireAuth, (req, res, next) => {
         if (req.params.idProvider === req.session.currentUser) {
                 return res.status(200).json({ message: "Of course you are in your favorite list!" })
@@ -70,7 +76,7 @@ router.post("/favorite/:idProvider", requireAuth, (req, res, next) => {
         User.findByIdAndUpdate(req.session.currentUser, { $addToSet: { favoriteProviders: req.params.idProvider } }, { new: true })
                 .then(response => {
                         console.log("here", response.favoriteProviders)
-                        res.status(200).json({ message: "Successfully added this provider to your favorite list" })
+                        res.status(200).json(response)
                 })
                 .catch(err => res.status(500).json(err));
 });
@@ -79,10 +85,42 @@ router.post("/favorite/:idProvider", requireAuth, (req, res, next) => {
 router.post("/no-favorite/:idProvider", requireAuth, (req, res, next) => {
         User.findByIdAndUpdate(req.session.currentUser, { $pull: { favoriteProviders: req.params.idProvider } }, { new: true })
                 .then(response => {
-                        console.log(response)
-                        res.status(200).json({ message: "Successfully deleted this provider to your favorite list" })
+                        res.status(200).json(response)
                 })
                 .catch(err => res.status(500).json(err));
 })
 
+//POST send a booking request to provider
+router.post("/booking/:idProvider", requireAuth, (req, res, next) => {
+        if (req.params.idProvider === req.session.currentUser) {
+                return res.status(200).json({ message: "It seems you do not need a care provider!" })
+        };
+        User.findByIdAndUpdate(req.params.idProvider, { $addToSet: { bookingList: req.session.currentUser } }, { new: true })
+                .then(response => {
+                        // console.log("here", response.bookingList)
+                        res.status(200).json(response)
+                })
+                .catch(err => res.status(500).json(err));
+});
+
+//DELETE booking request
+router.post("/no-booking/:idProvider", requireAuth, (req, res, next) => {
+        User.findByIdAndUpdate(req.params.idProvider, { $pull: { bookingList: req.session.currentUser } }, { new: true })
+                .then(response => {
+                        // console.log("cancel", response)
+                        res.status(200).json(response)
+                })
+                .catch(err => res.status(500).json(err));
+})
+
+//DELETE booking request by the current user
+router.post("/no-booking/user/:idUser", requireAuth, (req, res, next) => {
+
+        User.findByIdAndUpdate(req.session.currentUser, { $pull: { bookingList: req.params.idUser } }, { new: true })
+                .then(response => {
+                        // console.log("cancel", response)
+                        res.status(200).json({ message: "Successfully delete a booking" })
+                })
+                .catch(err => res.status(500).json(err));
+})
 module.exports = router;

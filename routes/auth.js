@@ -65,16 +65,16 @@ router.post("/signup", (req, res, next) => {
 
 
 // //GET PROFILE
-// router.get("/update", requireAuth, (req, res, next) => {
-//   User.find({ _id: req.session.currentUser})
-//     .populate("Users")
-//     .populate("Review")
-//     .then(list => {
-//       console.log(list)
-//       res.status(200).json(list)
-//     })
-//     .catch(err => res.status(500).json(err))
-// })
+router.get("/profile", requireAuth, (req, res, next) => {
+  User.findById(req.session.currentUser)
+    .populate("favoriteProviders", "lastName firstName image")
+    .populate("bookingList", "lastName firstName image")
+    .then(list => {
+      console.log(list)
+      res.status(200).json(list)
+    })
+    .catch(err => res.status(500).json(err))
+})
 
 
 //UPDATE PROFILE

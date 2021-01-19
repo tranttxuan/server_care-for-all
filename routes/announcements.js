@@ -53,7 +53,7 @@ router.get("/author/:id", requireAuth, (req, res, next) => {
 //GET a specific announcement
 router.get("/one/:idAnnouncement", (req, res, service) => {
         Announcement.findById(req.params.idAnnouncement)
-                .populate('author', 'firstName lastName  formattedAddress location')
+                .populate('author', 'firstName lastName  formattedAddress location image bookingList')
                 .then(announcement => { res.status(200).json(announcement) })
                 .catch(err => res.status(500).json(err))
 })
@@ -110,7 +110,28 @@ router.delete("/delete/:idAnnouncement", requireAuth, (req, res, next) => {
                 })
                 .catch(err => res.status(500).json({ message: "Failure to find documents" }));
 
+});
+
+//POST APPLY FOR A JOB
+router.post("/apply/:idAnnouncement", requireAuth, (req, res, next) => {
+        Announcement
+                .findByIdAndUpdate(req.params.idAnnouncement, { $addToSet: { applicants: req.session.currentUser } }, { new: true })
+                .then(response => {
+                        console.log(response)
+                        res.status(200).json(response)
+                })
+                .catch(err => res.status(500).json(err))
 })
 
+//POST CANCEL FOR A JOB
+router.post("/no-apply/:idAnnouncement", requireAuth, (req, res, next) => {
+        Announcement
+                .findByIdAndUpdate(req.params.idAnnouncement, { $pull: { applicants: req.session.currentUser } }, { new: true })
+                .then(response => {
+                        console.log(response)
+                        res.status(200).json(response)
+                })
+                .catch(err => res.status(500).json(err))
+})
 
 module.exports = router;
