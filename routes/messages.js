@@ -17,7 +17,7 @@ router.post("/", requireAuth, (req, res, next) => {
       }
 
       if (sender === receiver) {
-            return res.status(400).json({ message: "Your are sending a message to yourself!" })
+            return res.status(400).json({ message: "You are sending a message to yourself!" })
       }
 
       Message.findOne({ $and: [{ sender }, { receiver }, { announcement }] })

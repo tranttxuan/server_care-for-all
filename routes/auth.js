@@ -80,7 +80,8 @@ router.get("/profile", requireAuth, (req, res, next) => {
 //UPDATE PROFILE
 router.patch("/update", requireAuth, upload.single("image"), (req, res, next) => {
   if (req.file) {
-    req.body.image = req.file.path;
+    req.body.user.image = req.file.path;
+    // console.log("image is here",req.file.path,   req.body.image)
   }
   //check if new email is unique
   User.findById(req.session.currentUser).select("email")
@@ -104,6 +105,7 @@ router.patch("/update", requireAuth, upload.single("image"), (req, res, next) =>
     req.body.user.password = hashedPassword
   }
 
+  console.log("send to database", req.body.user)
   User.findByIdAndUpdate(req.session.currentUser, req.body.user, { new: true })
     .select("-password")
     .then(updatedUser => {
