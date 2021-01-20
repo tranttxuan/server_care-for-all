@@ -12,12 +12,15 @@ router.post("/", requireAuth, (req, res, next) => {
             author: req.session.currentUser,
             message: message
       })
-
-      if(sender === receiver){
-            return res.status(400).json({message:"Your are sending a message to yourself!"})
+      if (sender !== req.session.currentUser) {
+            return res.status(400).json({ message: "Unauthorized" })
       }
-     
-      Message.findOne({ $and: [{sender}, {receiver}, {announcement}] })
+
+      if (sender === receiver) {
+            return res.status(400).json({ message: "Your are sending a message to yourself!" })
+      }
+
+      Message.findOne({ $and: [{ sender }, { receiver }, { announcement }] })
             .then(response => {
                   console.log(response)
                   if (response) {
@@ -33,23 +36,59 @@ router.post("/", requireAuth, (req, res, next) => {
                               )
                               .populate("sender receiver announcement")
                               .then(response => res.status(200).json(response))
-                              .catch(err => res.status(400).json({message:"Failure to add message in your conversation"}))
+                              .catch(err => res.status(400).json({ message: "Failure to add message in your conversation" }))
                   } else {
-                        console.log({receiver, sender, announcement, messagesBox})
-                        Message.create({receiver, sender, announcement, messagesBox})
+                        console.log({ receiver, sender, announcement, messagesBox })
+                        Message.create({ receiver, sender, announcement, messagesBox })
                               .then(response => res.status(200).json(response))
-                              .catch(err => {res.status(400).json({message:"Failure to send message"})})
+                              .catch(err => { res.status(400).json({ message: "Failure to send message" }) })
                   }
             })
 });
 
-//GET messages between 2 users
-router.get("/message/:idUser", requireAuth, (req, res, next) => {
-      Message.findOne({ $or: [{ sender: idUser }, { receiver: idUs }] })
-            .populate("sender receiver announcement")
+
+//GET all messages between a sender and a provider by IdMessage
+router.get("/:idMessage", requireAuth, (req, res, next) => {
+      Message.findById(req.params.idMessage)
+            .populate("announcement sender receiver")
             .then(response => res.status(200).json(response))
-            .catch(err => res.status(400).json("Failure to add message in your conversation"))
+            .catch(err => res.status(400).json("Failure to get messages"))
 })
+
+//GET messages between 2 users
+router.get("/:idUser/:isReceived", requireAuth, (req, res, next) => {
+      if (req.params.idUser === req.session.currentUser) {
+
+            console.log("is received", req.params.isReceived)
+            if (req.params.isReceived === "received") {
+                  console.log("received")
+                  Message.find({ receiver: req.params.idUser }, { receiver: 1, sender: 1, announcement: 1 })
+                        .populate("sender", "firstName lastName")
+                        .populate("receiver", "firstName lastName")
+                        .populate("announcement", "title")
+                        .then(response => {
+                              console.log("send back data", response)
+                              res.status(200).json(response)
+                        })
+                        .catch(err => res.status(400).json("Failure to add message in your conversation"))
+                  return;
+            } else {
+                  console.log("sent")
+                  Message.find({ sender: req.params.idUser }, { receiver: 1, sender: 1, announcement: 1 })
+                        .populate("sender", "firstName lastName")
+                        .populate("receiver", "firstName lastName")
+                        .populate("announcement", "title")
+                        .then(response => res.status(200).json(response))
+                        .catch(err => res.status(400).json("Failure to add message in your conversation"))
+                  return;
+            }
+
+      } else {
+            return res.status(400).json({ message: "Unauthorized" })
+      }
+
+})
+
 
 //UPDATE message box
 router.patch("/add/:idMessage", requireAuth, (req, res, next) => {
@@ -73,7 +112,7 @@ router.patch("/add/:idMessage", requireAuth, (req, res, next) => {
 router.delete("/:idMessage", requireAuth, (req, res, next) => {
       Message.findByIdAndRemove(req.params.idMessage)
             .then(response => res.status(200).json(response))
-            .catch(err => res.status(400).json("Failure to add message in your conversation"))
+            .catch(err => res.status(400).json("Failure to delete message in your conversation"))
 })
 
 module.exports = router;
