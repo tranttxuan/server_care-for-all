@@ -57,51 +57,44 @@ router.get("/:idMessage", requireAuth, (req, res, next) => {
 
 //GET messages between 2 users
 router.get("/:idUser/:isReceived", requireAuth, (req, res, next) => {
-      if (req.params.idUser === req.session.currentUser) {
-
-            console.log("is received", req.params.isReceived)
-            if (req.params.isReceived === "received") {
-                  console.log("received")
-                  Message.find({ receiver: req.params.idUser }, { receiver: 1, sender: 1, announcement: 1 })
-                        .populate("sender", "firstName lastName")
-                        .populate("receiver", "firstName lastName")
-                        .populate("announcement", "title")
-                        .then(response => {
-                              console.log("send back data", response)
-                              res.status(200).json(response)
-                        })
-                        .catch(err => res.status(400).json("Failure to add message in your conversation"))
-                  return;
-            } else {
-                  console.log("sent")
-                  Message.find({ sender: req.params.idUser }, { receiver: 1, sender: 1, announcement: 1 })
-                        .populate("sender", "firstName lastName")
-                        .populate("receiver", "firstName lastName")
-                        .populate("announcement", "title")
-                        .then(response => res.status(200).json(response))
-                        .catch(err => res.status(400).json("Failure to add message in your conversation"))
-                  return;
-            }
-
-      } else {
+      if (req.params.idUser !== req.session.currentUser) {
             return res.status(400).json({ message: "Unauthorized" })
       }
 
+      if (req.params.isReceived === "received") {
+
+            Message.find({ receiver: req.params.idUser }, { receiver: 1, sender: 1, announcement: 1 })
+                  .populate("sender", "firstName lastName")
+                  .populate("receiver", "firstName lastName")
+                  .populate("announcement", "title")
+                  .then(response => {
+                        console.log("send back data", response)
+                        res.status(200).json(response)
+                  })
+                  .catch(err => res.status(400).json("Failure to add message in your conversation"))
+            return;
+      } else {
+
+            Message.find({ sender: req.params.idUser }, { receiver: 1, sender: 1, announcement: 1 })
+                  .populate("sender", "firstName lastName")
+                  .populate("receiver", "firstName lastName")
+                  .populate("announcement", "title")
+                  .then(response => res.status(200).json(response))
+                  .catch(err => res.status(400).json("Failure to add message in your conversation"))
+            return;
+      }
 })
 
 
 //UPDATE message box
 router.patch("/add/:idMessage", requireAuth, (req, res, next) => {
-      console.log(req.body)
-      Message.findByIdAndUpdate(req.params.idMessage, {
-            $push: {
-                  messagesBox: {
-                        author: req.session.currentUser,
-                        message: req.body.addMessage
-                        // message:req.body
-                  }
-            }
-      }, { new: true })
+      if (req.body.author !== req.session.currentUser) {
+            return res.status(400).json({ message: "Unauthorized" })
+      }
+      Message.findByIdAndUpdate(req.params.idMessage,
+            {
+                  $push: { messagesBox: req.body }
+            }, { new: true })
             .populate("sender receiver announcement")
             .then(response => res.status(200).json(response))
             .catch(err => res.status(400).json("Failure to add message in your conversation"))
