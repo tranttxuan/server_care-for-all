@@ -58,6 +58,16 @@ app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/web-reviews", require("./routes/web-reviews"));
 app.use("/api/messages", require("./routes/messages"));
 
+
+
+// 404 Middleware
+app.use((req, res, next) => {
+  const error = new Error("Ressource not found.");
+  error.status = 404;
+  next(error);
+});
+
+
 /**
  * Deploying to Heroku
  */
@@ -67,13 +77,6 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(__dirname + "/public/index.html");
   });
 }
-
-// 404 Middleware
-app.use((req, res, next) => {
-  const error = new Error("Ressource not found.");
-  error.status = 404;
-  next(error);
-});
 
 // Error handler middleware
 app.use((err, req, res, next) => {
