@@ -45,15 +45,7 @@ app.use(function (req, res, next) {
   next();
 });
 
-/**
- * Deploying to Heroku
- */
-if (process.env.NODE_ENV === "production") {
-  app.use("*", (req, res, next) => {
-    // If no routes match, send them the React HTML.
-    res.sendFile(__dirname + "/public/index.html");
-  });
-}
+
 
 /**
  * Routes
@@ -65,6 +57,16 @@ app.use("/api/announcements", require("./routes/announcements"));
 app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/web-reviews", require("./routes/web-reviews"));
 app.use("/api/messages", require("./routes/messages"));
+
+/**
+ * Deploying to Heroku
+ */
+if (process.env.NODE_ENV === "production") {
+  app.use("*", (req, res, next) => {
+    // If no routes match, send them the React HTML.
+    res.sendFile(__dirname + "/public/index.html");
+  });
+}
 
 // 404 Middleware
 app.use((req, res, next) => {
